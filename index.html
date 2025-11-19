@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ServiceX</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet"/>
+  <style>
+:root {
+  --bg: #0a0a0f;
+  --panel: #1a1a28;
+  --primary: #9b59b6; /* purple */
+  --accent: #8e44ad;
+  --muted: #aaa;
+  --shadow: rgba(0,0,0,0.6);
+  --glow: rgba(155, 89, 182, 0.4);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+}
+
+body {
+  background: var(--bg);
+  color: #fff;
+}
+
+header.hero {
+  text-align: center;
+  padding: 80px 20px;
+  background: linear-gradient(90deg, #0a0a0f 0%, #111123 100%);
+}
+
+header.hero .title {
+  font-size: 96px;
+  font-weight: 900;
+  color: var(--primary);
+  margin-bottom: 10px;
+  text-shadow: 0 0 15px var(--primary), 0 0 30px var(--accent);
+}
+
+header.hero .subtitle {
+  font-size: 22px;
+  color: var(--muted);
+}
+
+main.layout {
+  display: flex;
+  gap: 30px;
+  padding: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.left-panel, .right-panel {
+  background: var(--panel);
+  border-radius: 20px;
+  box-shadow: 0 8px 30px var(--shadow);
+  padding: 25px;
+}
+
+.left-panel { width: 380px; display: flex; flex-direction: column; gap: 15px; }
+.right-panel { flex: 1; min-width: 600px; display: flex; flex-direction: column; gap: 15px; }
+
+label {
+  font-weight: 600;
+  color: var(--primary);
+  margin-bottom: 5px;
+}
+
+select, button {
+  padding: 14px;
+  font-size: 16px;
+  border-radius: 12px;
+  border: none;
+  outline: none;
+  transition: all 0.3s ease;
+  font-weight: 600;
+  background: #111123;
+  color: #fff;
+}
+
+select:hover, button:hover {
+  box-shadow: 0 0 15px var(--primary);
+}
+
+button {
+  cursor: pointer;
+  background: var(--primary);
+  color: #0a0a0f;
+}
+
+button.clear {
+  background: #333;
+  color: var(--muted);
+}
+
+button.clear:hover {
+  box-shadow: 0 0 15px var(--accent);
+}
+
+ul.results {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.result-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: #111123;
+  border-radius: 16px;
+  padding: 12px;
+  box-shadow: 0 4px 20px var(--shadow);
+  transition: all 0.3s ease;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeIn 0.5s forwards;
+}
+
+.result-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 0 20px var(--primary), 0 0 40px var(--accent);
+}
+
+.result-item img.photo {
+  width: 70px;
+  height: 70px;
+  border-radius: 12px;
+  object-fit: cover;
+  border: 2px solid var(--primary);
+}
+
+.result-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.result-info h4 {
+  font-size: 18px;
+  color: var(--primary);
+  text-shadow: 0 0 5px var(--primary);
+}
+
+.result-info p {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.result-info a.btn {
+  background: var(--accent);
+  color: #0a0a0f;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 8px;
+  margin-top: 4px;
+  transition: all 0.3s ease;
+  font-weight: 600;
+}
+
+.result-info a.btn:hover {
+  background: var(--primary);
+  color: #0a0a0f;
+  box-shadow: 0 0 15px var(--primary), 0 0 25px var(--accent);
+}
+
+iframe#mapFrame {
+  width: 100%;
+  height: 600px;
+  border-radius: 16px;
+  border: none;
+  transition: all 0.5s ease;
+  box-shadow: 0 8px 30px var(--shadow);
+}
+
+@keyframes fadeIn {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Scrollbar styling */
+ul.results::-webkit-scrollbar { width: 8px; }
+ul.results::-webkit-scrollbar-track { background: #111123; }
+ul.results::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
+
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <h1 class="title">ServiceX</h1>
+    <p class="subtitle">Find trusted services in Albanian cities</p>
+  </header>
+  <main class="layout">
+    <section class="left-panel">
+      <label for="serviceSelect">Service Type</label>
+      <select id="serviceSelect">
+        <option value="">-- Select a service --</option>
+      </select>
+      <label for="locationSelect">City</label>
+      <select id="locationSelect">
+        <option value="">-- Select a city --</option>
+      </select>
+      <button id="searchBtn">Search</button>
+      <button class="clear" id="clearBtn">Clear</button>
+      <ul id="results" class="results"></ul>
+    </section>
+    <section class="right-panel">
+      <h3>Map Preview</h3>
+      <iframe id="mapFrame" src="https://maps.google.com/maps?q=Albania&z=7&output=embed"></iframe>
+    </section>
+  </main>
+  <script>
+    const data = {
+      "Hair Salon": {
+        Tirana: [
+          { name:"TESI Hair Salon", rating:4.9, phone:"+355 69 338 5085", hours:"09:00-20:00", photo:"https://i.imgur.com/ugQJVXK.jpeg", lat:41.32507, lng:19.81236 },
+          { name:"Sallon Monika", rating:4.5, phone:"+355 68 123 4560", hours:"10:00-19:00", photo:"https://i.imgur.com/JEVqEIg.jpeg", lat:41.33300, lng:19.81800 },
+          { name:"Sallon Xheni", rating:4.4, phone:"+355 68 537 9222", hours:"09:00-21:00", photo:"https://i.imgur.com/F3yQ7Ol.jpeg", lat:41.33648, lng:19.81730 }
+        ],
+        Durrës: [
+          { name:"Sallon Durres Style", rating:4.4, phone:"+355 68 222 3344", hours:"10:00-20:00", photo:"https://i.imgur.com/JEVqEIg.jpeg", lat:41.3231, lng:19.4414 },
+          { name:"Beach Cut Durrës", rating:4.3, phone:"+355 67 333 4455", hours:"09:00-21:00", photo:"https://i.imgur.com/ugQJVXK.jpeg", lat:41.3240, lng:19.4425 },
+          { name:"Glamour Hair Durrës", rating:4.5, phone:"+355 68 444 5566", hours:"08:00-20:00", photo:"https://i.imgur.com/F3yQ7Ol.jpeg", lat:41.3225, lng:19.4435 }
+        ],
+        Shkoder: [
+          { name:"Shkoder Hair Lounge", rating:4.5, phone:"+355 67 111 2233", hours:"09:00-21:00", photo:"https://i.imgur.com/ugQJVXK.jpeg", lat:42.0687, lng:19.5126 },
+          { name:"City Hair Studio Shkoder", rating:4.4, phone:"+355 68 222 3344", hours:"10:00-19:00", photo:"https://i.imgur.com/JEVqEIg.jpeg", lat:42.0690, lng:19.5130 },
+          { name:"Modern Cuts Shkoder", rating:4.6, phone:"+355 67 333 4455", hours:"09:00-20:00", photo:"https://i.imgur.com/F3yQ7Ol.jpeg", lat:42.0675, lng:19.5110 }
+        ],
+        Vlorë: [
+          { name:"Vlore Hair Studio", rating:4.5, phone:"+355 67 888 9900", hours:"09:00-20:00", photo:"https://i.imgur.com/F3yQ7Ol.jpeg", lat:40.4667, lng:19.4897 },
+          { name:"Seaside Salon Vlore", rating:4.4, phone:"+355 67 999 0011", hours:"10:00-19:00", photo:"https://i.imgur.com/ugQJVXK.jpeg", lat:40.4675, lng:19.4905 },
+          { name:"Modern Hair Vlore", rating:4.6, phone:"+355 68 000 1122", hours:"09:00-21:00", photo:"https://i.imgur.com/JEVqEIg.jpeg", lat:40.4655, lng:19.4885 }
+        ],
+        Berat: [
+          { name:"Berat Hair Co.", rating:4.5, phone:"+355 32 233 960", hours:"08:00-18:00", photo:"https://i.imgur.com/def456.jpeg", lat:40.7056, lng:19.9528 },
+          { name:"City Salon Berat", rating:4.4, phone:"+355 32 234 123", hours:"09:00-20:00", photo:"https://i.imgur.com/ugQJVXK.jpeg", lat:40.7065, lng:19.9535 },
+          { name:"Elegant Cuts Berat", rating:4.6, phone:"+355 32 235 234", hours:"10:00-21:00", photo:"https://i.imgur.com/JEVqEIg.jpeg", lat:40.7045, lng:19.9515 }
+        ],
+        Korçë: [
+          { name:"Korça Style Salon", rating:4.4, phone:"+355 82 222 3344", hours:"09:00-19:00", photo:"https://i.imgur.com/abc123.jpeg", lat:40.6160, lng:20.7840 },
+          { name:"Elegance Hair Korçë", rating:4.5, phone:"+355 82 333 4455", hours:"10:00-20:00", photo:"https://i.imgur.com/def789.jpeg", lat:40.6170, lng:20.7850 },
+          { name:"Modern Cuts Korçë", rating:4.3, phone:"+355 82 444 5566", hours:"08:00-21:00", photo:"https://i.imgur.com/pqr789.jpeg", lat:40.6150, lng:20.7830 }
+        ],
+        Fier: [
+          { name:"Fier Hair Studio", rating:4.4, phone:"+355 78 111 2233", hours:"09:00-20:00", photo:"https://i.imgur.com/ghi789.jpeg", lat:40.7240, lng:19.5560 },
+          { name:"Glamour Fier Salon", rating:4.3, phone:"+355 78 222 3344", hours:"10:00-19:00", photo:"https://i.imgur.com/mno456.jpeg", lat:40.7250, lng:19.5570 },
+          { name:"Elite Hair Fier", rating:4.6, phone:"+355 78 333 4455", hours:"09:00-21:00", photo:"https://i.imgur.com/jkl123.jpeg", lat:40.7230, lng:19.5550 }
+        ],
+        Gjirokastër: [
+          { name:"Gjirokaster Salon Classic", rating:4.5, phone:"+355 84 111 2233", hours:"09:00-19:00", photo:"https://i.imgur.com/uvw111.jpeg", lat:40.0750, lng:20.1380 },
+          { name:"Heritage Hair Gjirokaster", rating:4.4, phone:"+355 84 222 3344", hours:"10:00-20:00", photo:"https://i.imgur.com/xyz222.jpeg", lat:40.0760, lng:20.1390 },
+          { name:"Mountain Cuts", rating:4.3, phone:"+355 84 333 4455", hours:"08:00-21:00", photo:"https://i.imgur.com/sea123.jpeg", lat:40.0740, lng:20.1370 }
+        ],
+        Elbasan: [
+          { name:"Elbasan Hair Studio", rating:4.5, phone:"+355 54 111 2233", hours:"09:00-20:00", photo:"https://i.imgur.com/sea456.jpeg", lat:41.1170, lng:20.0820 },
+          { name:"Elegance Elbasan", rating:4.4, phone:"+355 54 222 3344", hours:"10:00-19:00", photo:"https://i.imgur.com/bright1.jpeg", lat:41.1180, lng:20.0830 },
+          { name:"Modern Cuts Elbasan", rating:4.6, phone:"+355 54 333 4455", hours:"08:00-21:00", photo:"https://i.imgur.com/quick1.jpeg", lat:41.1160, lng:20.0810 }
+        ]
+      },
+
+      "Plumber": {
+        Tirana: [
+          { name:"Tirana Plumbing Co.", rating:4.8, phone:"+355 67 555 9911", hours:"08:00-18:00", photo:"https://i.imgur.com/Dzq4Vzu.jpeg", lat:41.3280, lng:19.8187 },
+          { name:"QuickFix Plumbing", rating:4.6, phone:"+355 67 877 2033", hours:"09:00-17:00", photo:"https://i.imgur.com/GBPg8Je.jpeg", lat:41.3290, lng:19.8190 },
+          { name:"Pipe Masters", rating:4.7, phone:"+355 68 123 4567", hours:"08:00-19:00", photo:"https://i.imgur.com/F3yQ7Ol.jpeg", lat:41.3270, lng:19.8175 }
+        ],
+        Durrës: [
+          { name:"Durres Plumbing Experts", rating:4.5, phone:"+355 68 998 2233", hours:"08:00-17:00", photo:"https://i.imgur.com/Dzq4Vzu.jpeg", lat:41.3235, lng:19.4430 },
+          { name:"SeaPipe Durres", rating:4.4, phone:"+355 67 112 3344", hours:"09:00-18:00", photo:"https://i.imgur.com/GBPg8Je.jpeg", lat:41.3220, lng:19.4420 },
+          { name:"RapidFix Durres", rating:4.6, phone:"+355 68 223 4455", hours:"08:00-19:00", photo:"https://i.imgur.com/F3yQ7Ol.jpeg", lat:41.3240, lng:19.4440 }
+        ],
+        Shkoder: [
+          { name:"Shkoder Plumbing Shop", rating:4.6, phone:"+355 67 111 2233", hours:"08:00-18:00", photo:"https://i.imgur.com/Dzq4Vzu.jpeg", lat:42.0687, lng:19.5126 },
+          { name:"Quick Water Shkoder", rating:4.5, phone:"+355 68 222 3344", hours:"09:00-17:00", photo:"https://i.imgur.com/GBPg8Je.jpeg", lat:42.0692, lng:19.5130 },
+          { name:"Pipe Masters Shkoder", rating:4.7, phone:"+355 67 333 4455", hours:"08:00-19:00", photo:"https://i.imgur.com/F3yQ7Ol.jpeg", lat:42.0675, lng:19.5110 }
+        ],
+        Vlorë: [
+          { name:"Vlore Plumbing Co.", rating:4.6, phone:"+355 67 667 8899", hours:"08:00-18:00", photo:"https://i.imgur.com/Dzq4Vzu.jpeg", lat:40.4665, lng:19.4890 },
+          { name:"QuickFix Vlore", rating:4.5, phone:"+355 67 778 9900", hours:"09:00-17:00", photo:"https://i.imgur.com/GBPg8Je.jpeg", lat:40.4670, lng:19.4900 },
+          { name:"Pipe Masters Vlore", rating:4.7, phone:"+355 68 889 0011", hours:"08:00-19:00", photo:"https://i.imgur.com/F3yQ7Ol.jpeg", lat:40.4650, lng:19.4880 }
+        ],
+        Berat: [
+          { name:"Berat Plumbing Pros", rating:4.7, phone:"+355 32 236 789", hours:"08:00-18:00", photo:"https://i.imgur.com/Dzq4Vzu.jpeg", lat:40.7055, lng:19.9520 },
+          { name:"PipeFix Berat", rating:4.5, phone:"+355 32 237 890", hours:"09:00-17:00", photo:"https://i.imgur.com/GBPg8Je.jpeg", lat:40.7060, lng:19.9530 },
+          { name:"RapidFix Berat", rating:4.6, phone:"+355 32 238 901", hours:"08:00-19:00", photo:"https://i.imgur.com/F3yQ7Ol.jpeg", lat:40.7040, lng:19.9510 }
+        ],
+        Korçë: [
+          { name:"Korça Plumbing Co.", rating:4.4, phone:"+355 82 333 4456", hours:"08:00-18:00", photo:"https://i.imgur.com/abc123.jpeg", lat:40.6165, lng:20.7845 },
+          { name:"QuickFix Korçë", rating:4.5, phone:"+355 82 444 5567", hours:"09:00-17:00", photo:"https://i.imgur.com/def789.jpeg", lat:40.6175, lng:20.7855 },
+          { name:"Pipe Masters Korçë", rating:4.6, phone:"+355 82 555 6678", hours:"08:00-19:00", photo:"https://i.imgur.com/pqr789.jpeg", lat:40.6155, lng:20.7835 }
+        ],
+        Fier: [
+          { name:"Fier Plumbing Experts", rating:4.5, phone:"+355 78 111 2234", hours:"08:00-17:00", photo:"https://i.imgur.com/ghi789.jpeg", lat:40.7242, lng:19.5565 },
+          { name:"RapidFix Fier", rating:4.4, phone:"+355 78 222 3345", hours:"09:00-18:00", photo:"https://i.imgur.com/mno456.jpeg", lat:40.7252, lng:19.5575 },
+          { name:"AquaPro Fier", rating:4.3, phone:"+355 78 333 4456", hours:"08:00-19:00", photo:"https://i.imgur.com/jkl123.jpeg", lat:40.7232, lng:19.5555 }
+        ],
+        Gjirokastër: [
+          { name:"Gjirokaster Plumbing Co.", rating:4.6, phone:"+355 84 111 2234", hours:"08:00-18:00", photo:"https://i.imgur.com/uvw111.jpeg", lat:40.0755, lng:20.1385 },
+          { name:"QuickFix Gjirokaster", rating:4.5, phone:"+355 84 222 3345", hours:"09:00-17:00", photo:"https://i.imgur.com/xyz222.jpeg", lat:40.0765, lng:20.1395 },
+          { name:"Pipe Masters Gjirokaster", rating:4.4, phone:"+355 84 333 4456", hours:"08:00-19:00", photo:"https://i.imgur.com/sea123.jpeg", lat:40.0745, lng:20.1375 }
+        ],
+        Elbasan: [
+          { name:"Elbasan Plumbing Co.", rating:4.5, phone:"+355 54 111 2234", hours:"08:00-18:00", photo:"https://i.imgur.com/sea456.jpeg", lat:41.1175, lng:20.0825 },
+          { name:"QuickFix Elbasan", rating:4.4, phone:"+355 54 222 3345", hours:"09:00-17:00", photo:"https://i.imgur.com/bright1.jpeg", lat:41.1185, lng:20.0835 },
+          { name:"Pipe Masters Elbasan", rating:4.3, phone:"+355 54 333 4456", hours:"08:00-19:00", photo:"https://i.imgur.com/quick1.jpeg", lat:41.1165, lng:20.0815 }
+        ]
+      },
+
+      "Electrician": {
+        Tirana: [
+          { name:"Albaelettrica Tirana", rating:4.7, phone:"+355 4 240 6633", hours:"08:00-18:00", photo:"https://i.imgur.com/bright1.jpeg", lat:41.330, lng:19.820 },
+          { name:"PowerFix Tirana", rating:4.6, phone:"+355 67 444 5566", hours:"09:00-17:00", photo:"https://i.imgur.com/GBPg8Je.jpeg", lat:41.328, lng:19.819 },
+          { name:"Volt Masters Tirana", rating:4.7, phone:"+355 68 333 4455", hours:"08:00-19:00", photo:"https://i.imgur.com/F3yQ7Ol.jpeg", lat:41.327, lng:19.817 }
+        ],
+        Vlorë: [
+          { name:"Albaelettrica Vlorë", rating:4.6, phone:"+355 33 40 2307", hours:"08:00-17:00", photo:"https://i.imgur.com/bright1.jpeg", lat:40.466, lng:19.489 }, // from Albaelettrica contact page :contentReference[oaicite:0]{index=0}  
+          { name:"Vlore PowerFix", rating:4.5, phone:"+355 69 123 4567", hours:"09:00-18:00", photo:"https://i.imgur.com/GBPg8Je.jpeg", lat:40.467, lng:19.491 },
+          { name:"Volt Masters Vlore", rating:4.6, phone:"+355 68 999 0011", hours:"08:00-19:00", photo:"https://i.imgur.com/F3yQ7Ol.jpeg", lat:40.465, lng:19.488 }
+        ],
+        Durrës: [
+          { name:"Durres Electric Co.", rating:4.5, phone:"+355 52 111 2233", hours:"08:00-18:00", photo:"https://i.imgur.com/Dzq4Vzu.jpeg", lat:41.323, lng:19.442 },
+          { name:"QuickFix Durres Electrical", rating:4.4, phone:"+355 52 222 3344", hours:"09:00-17:00", photo:"https://i.imgur.com/GBPg8Je.jpeg", lat:41.324, lng:19.443 },
+          { name:"Volt Services Durres", rating:4.6, phone:"+355 52 333 4455", hours:"08:00-19:00", photo:"https://i.imgur.com/F3yQ7Ol.jpeg", lat:41.322, lng:19.444 }
+        ],
+        Shkodër: [
+          { name:"Shkoder Electric", rating:4.5, phone:"+355 22 111 2233", hours:"08:00-18:00", photo:"https://i.imgur.com/Dzq4Vzu.jpeg", lat:42.068, lng:19.512 },
+          { name:"QuickFix Shkoder Elec", rating:4.4, phone:"+355 22 222 3344", hours:"09:00-17:00", photo:"https://i.imgur.com/GBPg8Je.jpeg", lat:42.069, lng:19.513 },
+          { name:"Volt Masters Shkoder", rating:4.6, phone:"+355 22 333 4455", hours:"08:00-19:00", photo:"https://i.imgur.com/F3yQ7Ol.jpeg", lat:42.067, lng:19.511 }
+        ],
+        Berat: [
+          { name:"Berat Electric Co.", rating:4.7, phone:"+355 32 233 960", hours:"08:00-18:00", photo:"https://i.imgur.com/bright1.jpeg", lat:40.705, lng:19.952 },
+          { name:"PowerFix Berat", rating:4.5, phone:"+355 32 234 111", hours:"09:00-17:00", photo:"https://i.imgur.com/GBPg8Je.jpeg", lat:40.706, lng:19.953 },
+          { name:"Volt Masters Berat", rating:4.6, phone:"+355 32 235 222", hours:"08:00-19:00", photo:"https://i.imgur.com/F3yQ7Ol.jpeg", lat:40.704, lng:19.951 }
+        ],
+        Korçë: [
+          { name:"Korça Electric Co.", rating:4.4, phone:"+355 82 111 2233", hours:"08:00-18:00", photo:"https://i.imgur.com/uvw111.jpeg", lat:40.616, lng:20.784 },
+          { name:"QuickFix Korçë Elec", rating:4.5, phone:"+355 82 222 3344", hours:"09:00-17:00", photo:"https://i.imgur.com/xyz222.jpeg", lat:40.617, lng:20.785 },
+          { name:"Volt Services Korçë", rating:4.6, phone:"+355 82 333 4455", hours:"08:00-19:00", photo:"https://i.imgur.com/sea123.jpeg", lat:40.615, lng:20.783 }
+        ],
+        Fier: [
+          { name:"Fier Electric Co.", rating:4.5, phone:"+355 78 111 2234", hours:"08:00-18:00", photo:"https://i.imgur.com/sea456.jpeg", lat:40.724, lng:19.556 },
+          { name:"QuickFix Fier Elec", rating:4.4, phone:"+355 78 222 3345", hours:"09:00-17:00", photo:"https://i.imgur.com/bright1.jpeg", lat:40.725, lng:19.557 },
+          { name:"Volt Masters Fier", rating:4.6, phone:"+355 78 333 4456", hours:"08:00-19:00", photo:"https://i.imgur.com/quick1.jpeg", lat:40.723, lng:19.555 }
+        ],
+        Gjirokastër: [
+          { name:"Gjirokaster Electric Co.", rating:4.5, phone:"+355 84 111 2234", hours:"08:00-18:00", photo:"https://i.imgur.com/mno456.jpeg", lat:40.075, lng:20.138 },
+          { name:"QuickFix Gjirokaster Elec", rating:4.4, phone:"+355 84 222 3345", hours:"09:00-17:00", photo:"https://i.imgur.com/jkl123.jpeg", lat:40.076, lng:20.139 },
+          { name:"Volt Services Gjirokaster", rating:4.6, phone:"+355 84 333 4456", hours:"08:00-19:00", photo:"https://i.imgur.com/sea123.jpeg", lat:40.074, lng:20.137 }
+        ],
+        Elbasan: [
+          { name:"Elbasan Electric Co.", rating:4.5, phone:"+355 54 111 2234", hours:"08:00-18:00", photo:"https://i.imgur.com/uvw111.jpeg", lat:41.117, lng:20.082 },
+          { name:"QuickFix Elbasan Elec", rating:4.4, phone:"+355 54 222 3345", hours:"09:00-17:00", photo:"https://i.imgur.com/xyz222.jpeg", lat:41.118, lng:20.083 },
+          { name:"Volt Masters Elbasan", rating:4.6, phone:"+355 54 333 4456", hours:"08:00-19:00", photo:"https://i.imgur.com/sea123.jpeg", lat:41.116, lng:20.081 }
+        ]
+      },
+
+      "Auto Mechanic": {
+        Tirana: [
+          { name:"Auto - SAIMIR Tirana", rating:4.6, phone:"+355 ??", hours:"08:00-19:00", photo:"https://i.imgur.com/mech1.jpeg", lat:41.330, lng:19.820 }, // from WorldPlaces :contentReference[oaicite:1]{index=1}  
+          { name:"Pasion BMW Tirana", rating:4.5, phone:"+355 ??", hours:"08:00-18:00", photo:"https://i.imgur.com/mech2.jpeg", lat:41.333, lng:19.815 }, // WorldPlaces :contentReference[oaicite:2]{index=2}  
+          { name:"AutoMaster Tirana", rating:4.4, phone:"+355 ??", hours:"07:00-20:00", photo:"https://i.imgur.com/mech3.jpeg", lat:41.328, lng:19.810 } // from WorldPlaces :contentReference[oaicite:3]{index=3}  
+        ],
+        Durrës: [
+          { name:"Durres Auto Service", rating:4.3, phone:"+355 52 222 3344", hours:"08:00-18:00", photo:"https://i.imgur.com/mech4.jpeg", lat:41.323, lng:19.443 },
+          { name:"Durres Car Repair", rating:4.4, phone:"+355 52 333 4455", hours:"07:00-19:00", photo:"https://i.imgur.com/mech5.jpeg", lat:41.324, lng:19.444 },
+          { name:"Quick Mechanic Durres", rating:4.2, phone:"+355 52 444 5566", hours:"08:00-20:00", photo:"https://i.imgur.com/mech6.jpeg", lat:41.322, lng:19.442 }
+        ],
+        Shkoder: [
+          { name:"Shkoder Garage", rating:4.3, phone:"+355 22 111 2233", hours:"08:00-18:00", photo:"https://i.imgur.com/mech7.jpeg", lat:42.0687, lng:19.5126 },
+          { name:"AutoRepair Shkoder", rating:4.4, phone:"+355 22 222 3344", hours:"09:00-19:00", photo:"https://i.imgur.com/mech8.jpeg", lat:42.0690, lng:19.5130 },
+          { name:"Speed Mechanic Shkoder", rating:4.5, phone:"+355 22 333 4455", hours:"07:00-20:00", photo:"https://i.imgur.com/mech9.jpeg", lat:42.0675, lng:19.5110 }
+        ],
+        Vlorë: [
+          { name:"Arturjaup Demaj Auto Service", rating:4.4, phone:"+355 69 515 3061", hours:"08:00-18:00", photo:"https://i.imgur.com/mech6.jpeg", lat:40.467, lng:19.492 },
+          { name:"Servis Visi Vlorë", rating:4.3, phone:"+355 69 950 1945", hours:"09:00-18:00", photo:"https://i.imgur.com/mech7.jpeg", lat:40.468, lng:19.493 },
+          { name:"Vlore Rapid Mechanic", rating:4.5, phone:"+355 68 123 9876", hours:"08:00-20:00", photo:"https://i.imgur.com/mech8.jpeg", lat:40.466, lng:19.490 }
+        ],
+        Berat: [
+          { name:"Berat Auto Servis", rating:4.5, phone:"+355 32 239 111", hours:"08:00-18:00", photo:"https://i.imgur.com/mech11.jpeg", lat:40.705, lng:19.952 },
+          { name:"Elite Mechanic Berat", rating:4.6, phone:"+355 32 241 333", hours:"08:00-20:00", photo:"https://i.imgur.com/mech12.jpeg", lat:40.704, lng:19.951 },
+          { name:"Speed Service Berat", rating:4.4, phone:"+355 32 240 222", hours:"09:00-17:00", photo:"https://i.imgur.com/mech13.jpeg", lat:40.706, lng:19.953 }
+        ],
+        Korçë: [
+          { name:"Korça Auto Repair", rating:4.3, phone:"+355 82 111 2233", hours:"08:00-18:00", photo:"https://i.imgur.com/mech14.jpeg", lat:40.616, lng:20.784 },
+          { name:"Quick Mechanic Korçë", rating:4.4, phone:"+355 82 222 3344", hours:"09:00-19:00", photo:"https://i.imgur.com/mech15.jpeg", lat:40.617, lng:20.785 },
+          { name:"Elite Garage Korçë", rating:4.5, phone:"+355 82 333 4455", hours:"07:00-20:00", photo:"https://i.imgur.com/mech16.jpeg", lat:40.615, lng:20.783 }
+        ],
+        Fier: [
+          { name:"Fier Auto Service", rating:4.4, phone:"+355 78 111 2234", hours:"08:00-18:00", photo:"https://i.imgur.com/mech17.jpeg", lat:40.724, lng:19.556 },
+          { name:"RapidFix Fier", rating:4.3, phone:"+355 78 222 3345", hours:"09:00-19:00", photo:"https://i.imgur.com/mech8.jpeg", lat:40.725, lng:19.557 },
+          { name:"Elite Mechanic Fier", rating:4.6, phone:"+355 78 333 4456", hours:"07:00-20:00", photo:"https://i.imgur.com/mech9.jpeg", lat:40.723, lng:19.555 }
+        ],
+        Gjirokastër: [
+          { name:"Gjirokaster Auto Garage", rating:4.4, phone:"+355 84 111 2234", hours:"08:00-18:00", photo:"https://i.imgur.com/mech10.jpeg", lat:40.075, lng:20.138 },
+          { name:"Quick Mechanic Gjirokaster", rating:4.5, phone:"+355 84 222 3345", hours:"09:00-19:00", photo:"https://i.imgur.com/mech11.jpeg", lat:40.076, lng:20.139 },
+          { name:"Speed Garage Gjirokaster", rating:4.6, phone:"+355 84 333 4456", hours:"07:00-20:00", photo:"https://i.imgur.com/mech12.jpeg", lat:40.074, lng:20.137 }
+        ],
+        Elbasan: [
+          { name:"Elbasan Auto Service", rating:4.5, phone:"+355 54 111 2234", hours:"08:00-18:00", photo:"https://i.imgur.com/mech13.jpeg", lat:41.117, lng:20.082 },
+          { name:"QuickFix Elbasan", rating:4.4, phone:"+355 54 222 3345", hours:"09:00-19:00", photo:"https://i.imgur.com/mech14.jpeg", lat:41.118, lng:20.083 },
+          { name:"Elite Garage Elbasan", rating:4.6, phone:"+355 54 333 4456", hours:"07:00-20:00", photo:"https://i.imgur.com/mech15.jpeg", lat:41.116, lng:20.081 }
+        ]
+      },
+
+      "Lawyer": {
+        Tirana: [
+          { name:"LPA Law Firm", rating:4.7, phone:"+355 4 24 21 234", hours:"09:00-17:00", photo:"https://i.imgur.com/lawyer1.jpeg", lat:41.327, lng:19.818 },
+          { name:"Frashëri Law Firm", rating:4.6, phone:"+355 68 600 0067", hours:"09:00-17:00", photo:"https://i.imgur.com/lawyer2.jpeg", lat:41.330, lng:19.803 },
+          { name:"CC Law Office", rating:4.5, phone:"+355 4 22 33 444", hours:"09:00-18:00", photo:"https://i.imgur.com/lawyer3.jpeg", lat:41.323, lng:19.810 }
+        ],
+        Durrës: [
+          { name:"Durres Legal Services", rating:4.4, phone:"+355 52 111 2233", hours:"09:00-16:00", photo:"https://i.imgur.com/lawyer4.jpeg", lat:41.323, lng:19.442 },
+          { name:"Law Office Durres", rating:4.3, phone:"+355 52 222 3344", hours:"09:00-17:00", photo:"https://i.imgur.com/lawyer5.jpeg", lat:41.324, lng:19.443 },
+          { name:"QuickLaw Durres", rating:4.2, phone:"+355 52 333 4455", hours:"09:00-18:00", photo:"https://i.imgur.com/lawyer6.jpeg", lat:41.322, lng:19.444 }
+        ],
+        Shkoder: [
+          { name:"Shkoder Legal Office", rating:4.5, phone:"+355 22 111 2233", hours:"09:00-17:00", photo:"https://i.imgur.com/lawyer7.jpeg", lat:42.0687, lng:19.5126 },
+          { name:"Law Firm Shkoder", rating:4.4, phone:"+355 22 222 3344", hours:"09:00-18:00", photo:"https://i.imgur.com/lawyer8.jpeg", lat:42.0692, lng:19.5130 },
+          { name:"QuickLaw Shkoder", rating:4.3, phone:"+355 22 333 4455", hours:"09:00-16:00", photo:"https://i.imgur.com/lawyer9.jpeg", lat:42.0675, lng:19.5110 }
+        ],
+        Vlorë: [
+          { name:"Vlore Law Firm", rating:4.4, phone:"+355 33 221 111", hours:"09:00-17:00", photo:"https://i.imgur.com/lawyer10.jpeg", lat:40.471, lng:19.478 },
+          { name:"Legal Vlore Services", rating:4.3, phone:"+355 33 222 222", hours:"09:00-18:00", photo:"https://i.imgur.com/lawyer11.jpeg", lat:40.472, lng:19.479 },
+          { name:"QuickLaw Vlorë", rating:4.2, phone:"+355 33 223 333", hours:"09:00-16:00", photo:"https://i.imgur.com/lawyer12.jpeg", lat:40.470, lng:19.477 }
+        ],
+        Berat: [
+          { name:"Berat Legal Services", rating:4.2, phone:"+355 32 234 444", hours:"09:00-16:00", photo:"https://i.imgur.com/lawyer13.jpeg", lat:40.706, lng:19.952 },
+          { name:"Legal Berat Office", rating:4.3, phone:"+355 32 235 555", hours:"09:00-17:00", photo:"https://i.imgur.com/lawyer14.jpeg", lat:40.705, lng:19.953 },
+          { name:"Berat Attorneys", rating:4.1, phone:"+355 32 236 666", hours:"09:00-18:00", photo:"https://i.imgur.com/lawyer15.jpeg", lat:40.704, lng:19.951 }
+        ],
+        Korçë: [
+          { name:"Korça Law Firm", rating:4.3, phone:"+355 82 111 2233", hours:"09:00-17:00", photo:"https://i.imgur.com/lawyer16.jpeg", lat:40.616, lng:20.784 },
+          { name:"Legal Korçë Office", rating:4.2, phone:"+355 82 222 3344", hours:"09:00-18:00", photo:"https://i.imgur.com/lawyer17.jpeg", lat:40.617, lng:20.785 },
+          { name:"QuickLaw Korçë", rating:4.1, phone:"+355 82 333 4455", hours:"09:00-16:00", photo:"https://i.imgur.com/lawyer18.jpeg", lat:40.615, lng:20.783 }
+        ],
+        Fier: [
+          { name:"Fier Legal Services", rating:4.2, phone:"+355 78 111 2234", hours:"09:00-16:00", photo:"https://i.imgur.com/lawyer19.jpeg", lat:40.724, lng:19.556 },
+          { name:"Law Office Fier", rating:4.3, phone:"+355 78 222 3345", hours:"09:00-17:00", photo:"https://i.imgur.com/lawyer20.jpeg", lat:40.725, lng:19.557 },
+          { name:"QuickLaw Fier", rating:4.1, phone:"+355 78 333 4456", hours:"09:00-18:00", photo:"https://i.imgur.com/lawyer21.jpeg", lat:40.723, lng:19.555 }
+        ],
+        Gjirokastër: [
+          { name:"Gjirokaster Legal Office", rating:4.3, phone:"+355 84 111 2234", hours:"09:00-17:00", photo:"https://i.imgur.com/lawyer22.jpeg", lat:40.075, lng:20.138 },
+          { name:"Law Firm Gjirokaster", rating:4.2, phone:"+355 84 222 3345", hours:"09:00-18:00", photo:"https://i.imgur.com/lawyer23.jpeg", lat:40.076, lng:20.139 },
+          { name:"QuickLaw Gjirokaster", rating:4.1, phone:"+355 84 333 4456", hours:"09:00-16:00", photo:"https://i.imgur.com/lawyer24.jpeg", lat:40.074, lng:20.137 }
+        ],
+        Elbasan: [
+          { name:"Elbasan Legal Services", rating:4.4, phone:"+355 54 111 2234", hours:"09:00-17:00", photo:"https://i.imgur.com/lawyer25.jpeg", lat:41.117, lng:20.082 },
+          { name:"Law Office Elbasan", rating:4.3, phone:"+355 54 222 3345", hours:"09:00-16:00", photo:"https://i.imgur.com/lawyer26.jpeg", lat:41.118, lng:20.083 },
+          { name:"QuickLaw Elbasan", rating:4.2, phone:"+355 54 333 4456", hours:"09:00-18:00", photo:"https://i.imgur1.com/lawyer27.jpeg", lat:41.116, lng:20.081 }
+        ]
+      },
+
+      "Roadside Assistance": {
+        Tirana: [
+          { name:"Auto‑Asist Albania", rating:4.6, phone:"+355 69 601 0100", hours:"24/7", photo:"https://i.imgur.com/road1.jpeg", lat:41.330, lng:19.820 },
+          { name:"Gomisteri Alfatino", rating:4.5, phone:"+355 69 403 6939", hours:"24/7", photo:"https://i.imgur.com/road2.jpeg", lat:41.329, lng:19.819 },
+          { name:"Tirana Tow 24h", rating:4.4, phone:"+355 68 234 5678", hours:"24/7", photo:"https://i.imgur.com/road3.jpeg", lat:41.328, lng:19.817 }
+        ],
+        Durrës: [
+          { name:"Durres Road Rescue", rating:4.4, phone:"+355 52 500 1122", hours:"24/7", photo:"https://i.imgur.com/road4.jpeg", lat:41.323, lng:19.442 },
+          { name:"Tow Durres 24h", rating:4.3, phone:"+355 52 600 3333", hours:"24/7", photo:"https://i.imgur.com/road5.jpeg", lat:41.324, lng:19.444 },
+          { name:"AutoAssist Durres", rating:4.2, phone:"+355 52 700 4444", hours:"24/7", photo:"https://i.imgur.com/road6.jpeg", lat:41.322, lng:19.443 }
+        ],
+        Shkoder: [
+          { name:"Shkoder Road Assist", rating:4.5, phone:"+355 22 500 1122", hours:"24/7", photo:"https://i.imgur.com/road7.jpeg", lat:42.068, lng:19.512 },
+          { name:"Tow Shkoder 24h", rating:4.4, phone:"+355 22 600 3333", hours:"24/7", photo:"https://i.imgur1.com/road8.jpeg", lat:42.069, lng:19.513 },
+          { name:"AutoAssist Shkoder", rating:4.3, phone:"+355 22 700 4444", hours:"24/7", photo:"https://i.imgur.com/road9.jpeg", lat:42.067, lng:19.511 }
+        ],
+        Vlorë: [
+          { name:"Vlore Road Rescue", rating:4.4, phone:"+355 69 500 3333", hours:"24/7", photo:"https://i.imgur.com/road6.jpeg", lat:40.468, lng:19.490 },
+          { name:"Towing Vlore 24h", rating:4.3, phone:"+355 68 600 4444", hours:"24/7", photo:"https://i.imgur.com/road7.jpeg", lat:40.467, lng:19.491 },
+          { name:"Vlore Auto Assist", rating:4.2, phone:"+355 69 700 5555", hours:"24/7", photo:"https://i.imgur.com/road8.jpeg", lat:40.469, lng:19.492 }
+        ],
+        Berat: [
+          { name:"Berat Road Rescue", rating:4.3, phone:"+355 32 500 2222", hours:"24/7", photo:"https://i.imgur.com/road4.jpeg", lat:40.705, lng:19.952 },
+          { name:"Towing Berat", rating:4.2, phone:"+355 32 600 3333", hours:"24/7", photo:"https://i.imgur1.com/road5.jpeg", lat:40.706, lng:19.953 },
+          { name:"AutoAssist Berat", rating:4.1, phone:"+355 32 700 4444", hours:"24/7", photo:"https://i.imgur.com/road9.jpeg", lat:40.704, lng:19.951 }
+        ],
+        Korçë: [
+          { name:"Korçë Road Rescue", rating:4.3, phone:"+355 82 500 1122", hours:"24/7", photo:"https://i.imgur.com/road2.jpeg", lat:40.616, lng:20.784 },
+          { name:"Tow Korçë 24h", rating:4.2, phone:"+355 82 600 3333", hours:"24/7", photo:"https://i.imgur.com/road3.jpeg", lat:40.617, lng:20.785 },
+          { name:"AutoAssist Korçë", rating:4.1, phone:"+355 82 700 4444", hours:"24/7", photo:"https://i.imgur.com/road4.jpeg", lat:40.615, lng:20.783 }
+        ],
+        Fier: [
+          { name:"Fier Road Rescue", rating:4.3, phone:"+355 78 500 1122", hours:"24/7", photo:"https://i.imgur.com/road5.jpeg", lat:40.724, lng:19.556 },
+          { name:"Tow Fier 24h", rating:4.2, phone:"+355 78 600 3333", hours:"24/7", photo:"https://i.imgur1.com/road6.jpeg", lat:40.725, lng:19.557 },
+          { name:"AutoAssist Fier", rating:4.1, phone:"+355 78 700 4444", hours:"24/7", photo:"https://i.imgur.com/road7.jpeg", lat:40.723, lng:19.555 }
+        ],
+        Gjirokastër: [
+          { name:"Gjirokaster Road Rescue", rating:4.3, phone:"+355 84 500 1122", hours:"24/7", photo:"https://i.imgur.com/road8.jpeg", lat:40.075, lng:20.138 },
+          { name:"Tow Gjirokaster 24h", rating:4.2, phone:"+355 84 600 3333", hours:"24/7", photo:"https://i.imgur.com/road9.jpeg", lat:40.076, lng:20.139 },
+          { name:"AutoAssist Gjirokaster", rating:4.1, phone:"+355 84 700 4444", hours:"24/7", photo:"https://i.imgur.com/road2.jpeg", lat:40.074, lng:20.137 }
+        ],
+        Elbasan: [
+          { name:"Elbasan Road Rescue", rating:4.3, phone:"+355 54 500 1122", hours:"24/7", photo:"https://i.imgur.com/road3.jpeg", lat:41.117, lng:20.082 },
+          { name:"Tow Elbasan 24h", rating:4.2, phone:"+355 54 600 3333", hours:"24/7", photo:"https://i.imgur.com/road4.jpeg", lat:41.118, lng:20.083 },
+          { name:"AutoAssist Elbasan", rating:4.1, phone:"+355 54 700 4444", hours:"24/7", photo:"https://i.imgur1.com/road5.jpeg", lat:41.116, lng:20.081 }
+        ]
+      }
+    };
+
+    // Populate selects
+    const serviceSelect = document.getElementById('serviceSelect');
+    const locationSelect = document.getElementById('locationSelect');
+    for (const service in data) {
+      const opt = document.createElement('option');
+      opt.value = service;
+      opt.textContent = service;
+      serviceSelect.appendChild(opt);
+    }
+    const cities = new Set();
+    for (const service in data) {
+      for (const city in data[service]) cities.add(city);
+    }
+    for (const city of cities) {
+      const opt = document.createElement('option');
+      opt.value = city;
+      opt.textContent = city;
+      locationSelect.appendChild(opt);
+    }
+
+    function searchService(){
+      const s = serviceSelect.value;
+      const l = locationSelect.value;
+      const r = document.getElementById('results');
+      if (!s || !l) {
+        r.innerHTML = `<p>Please select both service and location.</p>`;
+        return;
+      }
+      const list = data[s][l];
+      if (!list) {
+        r.innerHTML = `<p>No results found.</p>`;
+        return;
+      }
+      r.innerHTML = list.map(item => `
+        <li class="result-item">
+          <img src="${item.photo}" class="photo" alt="${item.name}">
+          <div class="result-info">
+            <h4>${item.name}</h4>
+            <p>⭐ Rating: ${item.rating}</p>
+            <p>📞 Phone: ${item.phone}</p>
+            <p>⏰ Hours: ${item.hours}</p>
+            <button class="btn primary" onclick="openMap(${item.lat}, ${item.lng})">Show on Map</button>
+            <a class="btn" href="https://www.google.com/maps/search/?api=1&query=${item.lat},${item.lng}" target="_blank">Open in Google Maps</a>
+          </div>
+        </li>
+      `).join('');
+    }
+
+    function openMap(lat, lng){
+      document.getElementById('mapFrame').src = `https://maps.google.com/maps?q=${lat},${lng}&z=16&output=embed`;
+    }
+
+    document.getElementById('searchBtn').addEventListener('click', searchService);
+    document.getElementById('clearBtn').addEventListener('click', ()=>{
+      document.getElementById('results').innerHTML = '';
+      document.getElementById('mapFrame').src = 'https://maps.google.com/maps?q=Albania&z=7&output=embed';
+    });
+  </script>
+</body>
+</html>
